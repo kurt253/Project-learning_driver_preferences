@@ -5,7 +5,11 @@ Functies
 	4. Berekenen lengte route (Bruno)
 	5. Berekenen verschil in (Kurt)
 		a. sequentie tussen 2 routes 
-		b. Afstand
-		c. Meer of min in eerste en 2e
+		c. Meer of min punten in eerste en 2e
 	6. Bepalen van de relevante routes (Geert)
-Eerste en laatste van de voormiddag
+    7. Eerste en laatste van de voormiddag + opstellen van een DF van die files begint en eindigt met het depot
+
+
+
+
+	Dataframe : taskID, latt, long, 
