@@ -1,0 +1,11 @@
+Functies
+	1. Afstanden tussen 2 punten (Bruno)
+	2. Berekenen van depot 
+	3. Ophalen geo coördinaten (Geert)
+	4. Berekenen lengte route (Bruno)
+	5. Berekenen verschil in (Kurt)
+		a. sequentie tussen 2 routes 
+		b. Afstand
+		c. Meer of min in eerste en 2e
+	6. Bepalen van de relevante routes (Geert)
+Eerste en laatste van de voormiddag
