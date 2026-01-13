@@ -1,3 +1,19 @@
+Bedoeling is:
+- kwantificeren wat de verschillen zijn
+- nagaan of de aangepaste routes efficiënter zijn dan de initieel berekende routes
+
+Methode : 
+
+- technische uitwerking is belangrijker dan business analyse
+- plotjes maken
+	- routes visualiseren (2 die van belang rijn)
+	- punten niet geleverd ovef de routes en de dagen heen
+	- aantal punten ifv de weekdag
+	- 
+
+
+
+
 Functies
 	1. Afstanden tussen 2 punten (Bruno)
 	2. Berekenen van depot 
@@ -7,7 +23,7 @@ Functies
 		a. sequentie tussen 2 routes 
 		c. Meer of min punten in eerste en 2e
 	6. Bepalen van de relevante routes (Geert)
-    7. Eerste en laatste van de voormiddag + opstellen van een DF van die files begint en eindigt met het depot
+    7. opstellen van een DF van die files begint en eindigt met het depot
 
 
 
