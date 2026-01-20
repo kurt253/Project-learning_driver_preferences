@@ -1,7 +1,10 @@
 from config import LOC_REQUESTS
 from config import LOC_INTERMEDIATE
+from config import LOC_RESPONSES
+
 import pandas as pd
 import re
+import json
 
 def get_directories():
     rows = list()
@@ -39,8 +42,80 @@ def get_min_max_directories(df):
     df_min_max_rest["max_path"] = df_min_max_rest["depot"] + "_" + df_min_max_rest["route"] + "-" + df_min_max_rest["date"] + "/" + df_min_max_rest["depot"] + "_" + df_min_max_rest["route"] + "-" + df_min_max_rest["date"] + "-" + df_min_max_rest["max"]  + "-" + df_min_max_rest["max_rest"] + ".json"
     df_min_max_rest.to_csv(LOC_INTERMEDIATE/"depot-min-max-paths.csv",index=False)
 
+def get_unique_delivery_points():
+    unique_delivery_points = dict()
+    for loc_route in LOC_REQUESTS.rglob("*.json"):
+        # print (loc_route)
+        with open ( loc_route ) as json_file:
+            json_route = json.load(json_file)
+        for task in json_route["tasks"]:
+            latitude = task["address"]["latitude"]
+            longitude = task["address"]["longitude"]
+            if (latitude, longitude) not in unique_delivery_points.keys():
+                unique_delivery_points[(latitude, longitude)] = (latitude, longitude) 
+        # print ( task["id"] )
+        # print ( task["address"] )
+    return unique_delivery_points
+
+def get_depot_location():
+    unique_delivery_points = get_unique_delivery_points()
+    df_unique_delivery_points = pd.DataFrame(unique_delivery_points)
+    # display(df_unique_delivery_points)
+    df_unique_delivery_points_T = df_unique_delivery_points.transpose()
+    # display(df_unique_delivery_points_T)
+    depot_route = df_unique_delivery_points_T.mean(axis = 0)
+    # display(depot_route)
+    depot_latitude = depot_route[0]
+    depot_longitude = depot_route[1]
+    # print (depot)
+    depot = { "latitude" : depot_latitude, "longitude" : depot_longitude }
+    return depot
+
+# def read_route ( route_path_req, route_path_resp ):
+#     points = list()
+#     with open ( route_path_req ) as json_file:
+#         json_route = json.load(json_file)
+#     for task in json_route["tasks"]:
+#         # print ( task["id"] )
+#         # print ( task["address"] )
+#         points.append(task["address"])
+#     df_req = pd.DataFrame(points)
+#     points = list()
+#     with open ( route_path_resp ) as txt_file:
+#         lines = txt_file.readlines()
+#     df_resp= pd.DataFrame(lines)
+#     return df
+    
+# def read_route_and_calculate_distance ( loc_route, depot ):
+#     df_route = read_route( LOC_REQUESTS/loc_route )
+#     depot_route = get_distance_route (df_route, depot)
+#     return depot_route
+
+# loc_route = "0521_300-20220617/0521_300-20220617-055733-2-0.json"
+# print ( loc_route )
+# distance_route = read_route_and_calculate_distance( loc_route, depot )
+# print ( f"route {loc_route} - distance {distance_route}")
+
+
 if __name__ == "__main__" :
     print (f"testing as a standalone script")
     df = get_directories()
     get_min_max_directories(df)
+    depot = get_depot_location()
+    print (depot)
+    loc_route = "0521_300-20220617/0521_300-20220617-055733-2-0.json"
+    print ( loc_route )
+
+    # subdir_req = "0521_301-20220531/0521_301-20220531-054500-159-0.json"
+    # route_path_req = LOC_REQUESTS/subdir_req
+    # subdir_resp = "0521_301-20220531/0521_301-20220531-054500-159-0.txt"
+    # route_path_resp = LOC_RESPONSES/subdir_resp
+    # # route_path = LOC_REQUESTS/"0521_301-20220531/0521_301-20220531-054500-159-0.json"
+    # # print (route_path)
+
+    # df_route = read_route ( route_path_req, route_path_resp )
+    # display ( df_route)
+
+    # distance_route = read_route_and_calculate_distance( loc_route, depot )
+    # print ( f"route {loc_route} - distance {distance_route}")
 
