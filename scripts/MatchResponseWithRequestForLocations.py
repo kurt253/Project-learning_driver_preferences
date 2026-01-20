@@ -4,7 +4,12 @@ def MatchResponseWithRequestForLocations(requestfile,responsefile):
         RouteRequest = json.load(f)
     tasks = RouteRequest["tasks"]  # data["tasks"] is een lijst van dictionaries
     df_Request = pd.json_normalize(tasks)  # json_normalize maakt geneste structuren plat
-    AddIDentifier(df_Request)
+    
+    df_Request["Identifier"] = (
+        df_Request["address.latitude"].round(8).astype(str)
+        + "_"
+        + df_Request["address.longitude"].round(8).astype(str)
+    )
 
 
     df_response = pd.read_csv(responsefile, header=None, names=["tasks"])
@@ -15,3 +20,5 @@ def MatchResponseWithRequestForLocations(requestfile,responsefile):
     df_result = df_response.merge(df_Request,left_on="tasks",right_on="id", how="left")
 
     return df_result
+
+
