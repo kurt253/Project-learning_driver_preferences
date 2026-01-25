@@ -40,7 +40,10 @@ def get_min_max_directories(df):
     # display(df_min_max_rest)
     df_min_max_rest["min_path"] = df_min_max_rest["depot"] + "_" + df_min_max_rest["route"] + "-" + df_min_max_rest["date"] + "/" + df_min_max_rest["depot"] + "_" + df_min_max_rest["route"] + "-" + df_min_max_rest["date"] + "-" + df_min_max_rest["min"]  + "-" + df_min_max_rest["min_rest"] + ".json"
     df_min_max_rest["max_path"] = df_min_max_rest["depot"] + "_" + df_min_max_rest["route"] + "-" + df_min_max_rest["date"] + "/" + df_min_max_rest["depot"] + "_" + df_min_max_rest["route"] + "-" + df_min_max_rest["date"] + "-" + df_min_max_rest["max"]  + "-" + df_min_max_rest["max_rest"] + ".json"
+    df_min_max_rest["min_resp_path"] = df_min_max_rest["depot"] + "_" + df_min_max_rest["route"] + "-" + df_min_max_rest["date"] + "/" + df_min_max_rest["depot"] + "_" + df_min_max_rest["route"] + "-" + df_min_max_rest["date"] + "-" + df_min_max_rest["min"]  + "-" + df_min_max_rest["min_rest"] + ".txt"
+    df_min_max_rest["max_resp_path"] = df_min_max_rest["depot"] + "_" + df_min_max_rest["route"] + "-" + df_min_max_rest["date"] + "/" + df_min_max_rest["depot"] + "_" + df_min_max_rest["route"] + "-" + df_min_max_rest["date"] + "-" + df_min_max_rest["max"]  + "-" + df_min_max_rest["max_rest"] + ".txt"
     df_min_max_rest.to_csv(LOC_INTERMEDIATE/"depot-min-max-paths.csv",index=False)
+    return df_min_max_rest
 
 def get_unique_delivery_points():
     unique_delivery_points = dict()
@@ -56,6 +59,35 @@ def get_unique_delivery_points():
         # print ( task["id"] )
         # print ( task["address"] )
     return unique_delivery_points
+
+
+def levenshtein_distance(a: str, b: str) -> int:
+    m, n = len(a), len(b)
+
+    # Create a (m+1) x (n+1) DP table
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    print (dp)
+
+    # Base cases
+    for i in range(m + 1):
+        dp[i][0] = i
+    for j in range(n + 1):
+        dp[0][j] = j
+    print (dp)
+
+    # Fill table
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            cost = 0 if a[i - 1] == b[j - 1] else 1
+            
+            dp[i][j] = min(
+                dp[i - 1][j] + 1,      # deletion
+                dp[i][j - 1] + 1,      # insertion
+                dp[i - 1][j - 1] + cost  # substitution
+            )
+
+    print (dp)
+    return dp[m][n]
 
 def get_depot_location():
     unique_delivery_points = get_unique_delivery_points()
@@ -100,11 +132,15 @@ def get_depot_location():
 if __name__ == "__main__" :
     print (f"testing as a standalone script")
     df = get_directories()
-    get_min_max_directories(df)
+    df_min_max = get_min_max_directories(df)
     depot = get_depot_location()
     print (depot)
     loc_route = "0521_300-20220617/0521_300-20220617-055733-2-0.json"
     print ( loc_route )
+
+    print (levenshtein_distance("bompa","bomma"))
+    print (levenshtein_distance("bompas","bomma"))
+    print (levenshtein_distance("bompa","viva bomma patatten met saucissen"))
 
     # subdir_req = "0521_301-20220531/0521_301-20220531-054500-159-0.json"
     # route_path_req = LOC_REQUESTS/subdir_req
