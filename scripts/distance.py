@@ -1,6 +1,7 @@
 import random
 import pandas as pd
 
+
 def get_distance_between_two_points (latitude1, longitude1, latitude2, longitude2):
   # returns the distance between two points in km.
   # input : the latitude and longitude of the two points to connect.
@@ -23,3 +24,8 @@ def get_distance_for_all_routes (routes):
     rows.append({"route_id":route_id, "distance":distance})
   routes = pd.DataFrame(rows)
   return routes
+
+
+if __name__ == "__main__" :
+    print (f"testing as a standalone script")
+    

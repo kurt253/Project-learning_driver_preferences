@@ -50,31 +50,31 @@ def VerschilInSequentie(df1, df2):
 
 
 
+if __name__ == "__main__" :
+
+    def TestMain():
+        RoutePath = ".\\data\\input\\requests\\0521_301-20220531\\"
+        FRoute1 = "0521_301-20220531-054500-159-0.json"
+        FRoute2 = "0521_301-20220531-064436-148-148.json"
+
+        with open(os.path.join(RoutePath,FRoute1), "r") as f:
+            Route1 = json.load(f)
+
+        tasks = Route1["tasks"]  # data["tasks"] is een lijst van dictionaries
+        df_Route1 = pd.json_normalize(tasks)  # json_normalize maakt geneste structuren plat
+        
+        with open(os.path.join(RoutePath,FRoute2), "r") as f:
+            Route2 = json.load(f)
+
+        display(df_Route1)
+        
+        tasks = Route2["tasks"]  # data["tasks"] is een lijst van dictionaries
+        df_Route2 = pd.json_normalize(tasks)  # json_normalize maakt geneste structuren plat
+
+        print(VerschilInSequentie(df_Route1,df_Route2))
 
 
-def TestMain():
-    RoutePath = ".\\data\\input\\requests\\0521_301-20220531\\"
-    FRoute1 = "0521_301-20220531-054500-159-0.json"
-    FRoute2 = "0521_301-20220531-064436-148-148.json"
-
-    with open(os.path.join(RoutePath,FRoute1), "r") as f:
-        Route1 = json.load(f)
-
-    tasks = Route1["tasks"]  # data["tasks"] is een lijst van dictionaries
-    df_Route1 = pd.json_normalize(tasks)  # json_normalize maakt geneste structuren plat
-    
-    with open(os.path.join(RoutePath,FRoute2), "r") as f:
-        Route2 = json.load(f)
-
-    display(df_Route1)
-    
-    tasks = Route2["tasks"]  # data["tasks"] is een lijst van dictionaries
-    df_Route2 = pd.json_normalize(tasks)  # json_normalize maakt geneste structuren plat
-
-    print(VerschilInSequentie(df_Route1,df_Route2))
 
 
-
-
-if True:
-    TestMain()
+    if True:
+        TestMain()
