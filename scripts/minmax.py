@@ -356,6 +356,33 @@ def enrich_min_max(df_route, depot):
     df_route.to_csv(LOC_INTERMEDIATE/"depot-min-max-enriched.csv",index=False)
     return df_route
 
+"""
+function : write_depot_location(depot)
+---------------------------------
+write the location of the depot to a csv file, with two columns : latitude, and longitude
+input :
+1. depot : hash of the depot location
+output :
+1. csv file stored in LOC_INTERMEDIATE/depot_location.csv
+"""
+def write_depot_location(depot):
+    df_depot = pd.DataFrame([depot])
+    df_depot.to_csv(LOC_INTERMEDIATE/"depot_location.csv")
+
+
+"""
+function : read_depot_location()
+--------------------------------
+read a depot location from a csv file, with two column : latitude and longitude
+input :
+1. /
+output :
+1. dataframe with the location
+"""
+def read_depot_location():
+    df_depot = pd.read_csv(LOC_INTERMEDIATE/"depot_location.csv")
+    return df_depot
+
 
 """
 function : plot_route ( loc_min, loc_max, depot )

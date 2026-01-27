@@ -3,7 +3,7 @@ import json
 import pandas as pd
 import os
 from difflib import SequenceMatcher
-from IPython.display import display
+# from IPython.display import display
 
 
 def VerschilInSequentie(df1, df2):
