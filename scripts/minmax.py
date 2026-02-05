@@ -140,7 +140,47 @@ def get_levenshtein_distance(a: str, b: str) -> int:
 
     return dp[m][n]
 
+
 """
+function : get_levenshtein_distance_2(a_lst: list, b_lst: list)
+---------------------------------------------------
+calculate levenshtein distance
+input :
+1. two lists of strings to compare
+output :
+1. distance (int)
+"""
+def get_levenshtein_distance_2(a_lst: list, b_lst: list) -> int:
+    m, n = len(a_lst), len(b_lst)
+    # print ( f"{m} {n}")
+
+    # Create a (m+1) x (n+1) DP table
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    # print (dp)
+
+    # Base cases
+    for i in range(m + 1):
+        dp[i][0] = i
+    for j in range(n + 1):
+        dp[0][j] = j
+    # print (dp)
+
+    # Fill table
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            cost = 0 if a_lst[i - 1] == b_lst[j - 1] else 1
+            
+            dp[i][j] = min(
+                dp[i - 1][j] + 1,      # deletion
+                dp[i][j - 1] + 1,      # insertion
+                dp[i - 1][j - 1] + cost  # substitution
+            )
+
+    return dp[m][n]
+
+"""
+
+
 function haversine(lat1, lon1, lat2, lon2, radius=6371.0088)
 ------------------------------------------------------------
 calcuates the distance between two points according to the haversine formula
@@ -293,6 +333,22 @@ def get_levenshtein_string( loc_request, loc_response ):
 
 
 """
+function get_levenshtein_list( loc_request, loc_response )
+------------------------------------------------------------
+for a given route, create a list of all string values of the column "Identifier"
+input :
+1. loc_request : location of the request file
+2. loc_response : location of the response file
+output :
+1. concatenated string of all values in the "Identifer" column, w/o separator
+"""
+def get_levenshtein_list( loc_request, loc_response ):
+    df_route = read_route( loc_request, loc_response )
+    levenshtein_lst = df_route["Identifier"].to_list()
+    return levenshtein_lst
+
+
+"""
 function : read_route_and_calculate_number_delivery_points ( loc_request, loc_response, depot = None )
 reads the request and response file of a route on a given day, as well as the location of the depot
 calculates the total number of delivery points of the route
@@ -347,12 +403,16 @@ output :
 def enrich_min_max(df_route, depot):
     df_route["min_distance"]=df_route.apply(lambda x : read_route_and_calculate_distance(x["min_path"],x["min_resp_path"], depot), axis = 1)
     df_route["max_distance"]=df_route.apply(lambda x : read_route_and_calculate_distance(x["max_path"],x["max_resp_path"], depot), axis = 1)
-    df_route["min_levenshtein_str"]=df_route.apply(lambda x : get_levenshtein_string( x["min_path"],x["min_resp_path"] ), axis = 1)
-    df_route["max_levenshtein_str"]=df_route.apply(lambda x : get_levenshtein_string( x["max_path"],x["max_resp_path"] ), axis = 1)
-    df_route["levenshtein_distance"]=df_route.apply(lambda x : get_levenshtein_distance(x["min_levenshtein_str"], x["max_levenshtein_str"]), axis = 1)
+    df_route["min_levenshtein_lst"]=df_route.apply(lambda x : get_levenshtein_list( x["min_path"],x["min_resp_path"] ), axis = 1)
+    df_route["max_levenshtein_lst"]=df_route.apply(lambda x : get_levenshtein_list( x["max_path"],x["max_resp_path"] ), axis = 1)
+    df_route["levenshtein_distance_2"]=df_route.apply(lambda x : get_levenshtein_distance_2(x["min_levenshtein_lst"], x["max_levenshtein_lst"]), axis = 1)
+    # df_route["min_levenshtein_str"]=df_route.apply(lambda x : get_levenshtein_string( x["min_path"],x["min_resp_path"] ), axis = 1)
+    # df_route["max_levenshtein_str"]=df_route.apply(lambda x : get_levenshtein_string( x["max_path"],x["max_resp_path"] ), axis = 1)
+    # df_route["levenshtein_distance"]=df_route.apply(lambda x : get_levenshtein_distance(x["min_levenshtein_str"], x["max_levenshtein_str"]), axis = 1)
     df_route["min_number_delivery_points"]=df_route.apply(lambda x : read_route_and_calculate_number_delivery_points(x["min_path"],x["min_resp_path"], depot), axis = 1)
     df_route["max_number_delivery_points"]=df_route.apply(lambda x : read_route_and_calculate_number_delivery_points(x["max_path"],x["max_resp_path"], depot), axis = 1)
     df_route[["missing_in_min","missing_in_max","sequence_similarity"]] = df_route.apply(lambda x : calculate_difference_in_sequence(x["min_path"], x["min_resp_path"], x["max_path"], x["max_resp_path"]), axis = 1, result_type="expand")
+    df_route = df_route.drop(['min_levenshtein_lst','max_levenshtein_lst'], axis=1)
     df_route.to_csv(LOC_INTERMEDIATE/"depot-min-max-enriched.csv",index=False)
     return df_route
 
@@ -437,9 +497,18 @@ def plot_route ( depot, route, date, df_routes, loc_depot ):
 
 if __name__ == "__main__" :
     print (f"testing as a standalone script")
-    df = get_directories()
-    df_min_max = get_min_max_directories(df)
-    print (df_min_max)
+
+    dir_df = get_directories()
+    print(dir_df)
+    min_max_df = get_min_max_directories(dir_df)
+    print(min_max_df)
+    depot_dict = get_depot_location()
+    write_depot_location(depot_dict)
+    print(depot_dict)
+    min_max_enr_df = enrich_min_max(min_max_df, depot_dict)
+    print(min_max_enr_df)
+
+
     # depot = get_depot_location()
     # print (depot)
     # print (depot)
@@ -472,17 +541,26 @@ if __name__ == "__main__" :
     # dist_route_with_depot = read_route_and_calculate_distance ( loc_req, loc_resp, depot )
     # print (f"distance w/o depot : {dist_route_wo_depot}, distance with depot : {dist_route_with_depot}")
 
-    loc_req = "0521_301-20220531/0521_301-20220531-054500-159-0.json"
-    loc_resp = "0521_301-20220531/0521_301-20220531-054500-159-0.txt"
-    loc_req_2 = "0521_301-20220531/0521_301-20220531-064436-148-148.json"
-    loc_resp_2 = "0521_301-20220531/0521_301-20220531-064436-148-148.txt"
+    # loc_req = "0521_301-20220531/0521_301-20220531-054500-159-0.json"
+    # loc_resp = "0521_301-20220531/0521_301-20220531-054500-159-0.txt"
+    # loc_req_2 = "0521_301-20220531/0521_301-20220531-064436-148-148.json"
+    # loc_resp_2 = "0521_301-20220531/0521_301-20220531-064436-148-148.txt"
 
-    lev_str = get_levenshtein_string( loc_req, loc_resp )
-    # print ( f"levenshtein string : {lev_str}")
-    lev_str_2 = get_levenshtein_string( loc_req_2, loc_resp_2 )
-    # print ( f"levenshtein string 2 : {lev_str_2}")
-    lev_dist = get_levenshtein_distance(lev_str, lev_str_2)
-    print (f"levenshtein distance : {lev_dist}")
+    # lev_str = get_levenshtein_string( loc_req, loc_resp )
+    # # print ( f"levenshtein string : {lev_str}")
+    # lev_str_2 = get_levenshtein_string( loc_req_2, loc_resp_2 )
+    # # print ( f"levenshtein string 2 : {lev_str_2}")
+    # lev_dist = get_levenshtein_distance(lev_str, lev_str_2)
+    # print (f"levenshtein distance : {lev_dist}")
+
+    # lev_lst = get_levenshtein_list( loc_req, loc_resp )
+    # print ( lev_lst)
+    # # print ( f"levenshtein string : {lev_str}")
+    # lev_lst_2 = get_levenshtein_list( loc_req_2, loc_resp_2 )
+    # print (lev_lst_2)
+    # # print ( f"levenshtein string 2 : {lev_str_2}")
+    # lev_lst_dist = get_levenshtein_distance_2(lev_lst, lev_lst_2)
+    # print (f"levenshtein distance : {lev_lst_dist}")
 
     # subdir_req = "0521_301-20220531/0521_301-20220531-054500-159-0.json"
     # route_path_req = LOC_REQUESTS/subdir_req
