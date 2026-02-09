@@ -6,6 +6,8 @@ import numpy as np
 from datetime import datetime
 import plotly.graph_objects as go
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
 
 import minmax
 
@@ -24,6 +26,69 @@ df_route = pd.read_csv(LOC_INTERMEDIATE/"depot-min-max-enriched.csv")
 df_depot = pd.read_csv(LOC_INTERMEDIATE/"depot_location.csv")
 
 st.title("🧩 Learning Driver Preferences")
+
+# Levenshtein en sequence similarity statistics
+# #############################################
+stats_df = df_route.groupby(["depot","route"]).agg(levenshtein_mean=('levenshtein_distance_2', 'mean'), 
+                                                    levenshtein_std = ('levenshtein_distance_2', 'std'),
+                                                    sequence_similarity_mean=('sequence_similarity', 'mean'),
+                                                    sequence_similarity_std=('sequence_similarity','std'))
+
+stats2_df = stats_df.sort_values(by=["levenshtein_mean", "levenshtein_std"], ascending=[False, False]).reset_index()
+stats3_df = stats_df.sort_values(by=["sequence_similarity_mean", "sequence_similarity_std"], ascending=[True, True]).reset_index()
+
+fig, axes = plt.subplots(2,1)
+axes[0].plot(stats2_df["route"],stats2_df["levenshtein_mean"],color = "red",label='Levenshtein mean')
+axes[0].plot(stats2_df["route"],stats2_df["levenshtein_std"],color = "blue",label='Levenshtein standard deviation')
+title_0 = f"Levenshtein distance - mean and standard deviation"
+legend_prop = FontProperties(size=6, weight="bold")
+axes[0].legend(title = title_0,prop = legend_prop, title_fontsize = 8)
+axes[0].set_xlabel("route", fontdict={"fontsize": 6})
+axes[0].set_ylabel("mean/standard deviation", fontdict={"fontsize": 6})
+axes[0].tick_params(axis="x", labelsize=6)
+axes[0].tick_params(axis="y", labelsize=6)
+
+axes[1].plot(stats3_df["route"],stats3_df["sequence_similarity_mean"],color = "red",label='sequence similarity mean')
+axes[1].plot(stats3_df["route"],stats3_df["sequence_similarity_std"],color = "blue",label='sequence similarity standard deviation')
+title_1 = f"Sequence similarity - mean and standard deviation"
+axes[1].legend(title = title_1,prop = legend_prop, title_fontsize = 8)
+axes[1].set_xlabel("route", fontdict={"fontsize": 6})
+axes[1].set_ylabel("mean/standard deviation", fontdict={"fontsize": 6})
+axes[1].tick_params(axis="x", labelsize=6)
+axes[1].tick_params(axis="y", labelsize=6)
+
+st.pyplot(fig)
+
+
+
+# summary_levenshtein_fig = go.Figure()
+# summary_levenshtein_fig.add_trace(go.Scatter(
+#     x=stats2_df["route"], y=stats2_df["levenshtein_mean"],
+#     mode="markers", 
+#     # marker=dict(color=route_clr, size=10)
+#     marker=dict(color="red", size=1)
+# ))
+# summary_levenshtein_fig.add_trace(go.Scatter(
+#     x=stats2_df["route"], y=stats2_df["levenshtein_std"],
+#     mode="markers", 
+#     # marker=dict(color=route_clr, size=10)
+#     marker=dict(color="blue", size=1)
+# ))
+
+
+# c6, c7 = st.columns([1,1])
+# with c6:
+#     st.plotly_chart(summary_levenshtein_fig, use_container_width=True)
+
+# with c7:
+#     st.plotly_chart(summary_levenshtein_fig, use_container_width=True)
+
+# fig, axes = plt.subplots(2,1)
+# axes[0].plot(stats2_df["route"],stats2_df["levenshtein_mean"],color = "red",label='Levenshtein mean')
+# axes[0].plot(stats2_df["route"],stats2_df["levenshtein_std"],color = "blue",label='Levenshtein standard deviation')
+# axes[1].plot(stats3_df["route"],stats3_df["sequence_similarity_mean"],color = "red",label='sequence similarity mean')
+# axes[1].plot(stats3_df["route"],stats3_df["sequence_similarity_std"],color = "blue",label='sequence similarity standard deviation')
+
 
 # global overview
 # ###############
@@ -75,8 +140,6 @@ glb_final_fig.add_trace(go.Scatter(
 c4, c5 = st.columns([1,1])
 with c4:
     st.plotly_chart(glb_first_fig, use_container_width=True)
-    # st.metric("Rows - min", len(df_min_lat_lon))
-    # st.metric("Rows - max", len(df_max_lat_lon))
 with c5:
     st.plotly_chart(glb_final_fig, use_container_width=True)
 
@@ -120,10 +183,6 @@ df_max_lat_lon = df_max[["latitude","longitude"]]
 df_min_with_depot = pd.concat([df_depot, df_min_lat_lon, df_depot])
 df_max_with_depot = pd.concat([df_depot, df_max_lat_lon, df_depot])
 
-# st.markdown("### 🔎 Filtered result")
-# st.dataframe(df_final_route_T, use_container_width=True)
-# st.caption(f"Rows: {len(df_final_route)}")
-
 fig1 = go.Figure()
 fig1.add_trace(go.Scatter(
     x=df_min_with_depot["latitude"], y=df_min_with_depot["longitude"],
@@ -158,8 +217,6 @@ fig3.add_trace(go.Scatter(
 c1, c2, c3 = st.columns([1,1,1])
 with c1:
     st.plotly_chart(fig1, use_container_width=True)
-    # st.metric("Rows - min", len(df_min_lat_lon))
-    # st.metric("Rows - max", len(df_max_lat_lon))
 with c2:
     st.plotly_chart(fig2, use_container_width=True)
 with c3:
