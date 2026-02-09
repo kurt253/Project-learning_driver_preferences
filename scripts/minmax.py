@@ -10,6 +10,7 @@ import re
 import json
 import math
 import matplotlib.pyplot as plt
+import numpy as np
 
 """
 function : get_directories()
@@ -494,20 +495,65 @@ def plot_route ( depot, route, date, df_routes, loc_depot ):
     axes[2].set_ylabel("longitude")
 
 
+"""
+function : plot_routes_of_a_day ( depot, date, df_routes, loc_depot )
+---------------------------------------------------------------------
+will plot all routes of a given depot and date - first calculation and last calculation of the morning
+route with and without depot will be plotted
+input :
+1. df_routes : summary of all routes
+2. depot : id of the depot
+3. date : date of the route
+4. loc_depot : location of the depot as dictionary (latitude, longitude)
+output :
+1. plot of the routes
+"""
+def plot_routes_of_a_day(depot, date, df_routes, loc_depot):
+    plt.rcParams["figure.figsize"] = (24,12)
+    fig, axes = plt.subplots(1,2)
+    # plot routes (random colors)
+    depot_df = pd.DataFrame([loc_depot])
+    routes_df = df_routes[(df_routes["depot"] == depot) & (df_routes["date"] == date)]
+    routes_lst = routes_df.route.tolist()
+    for route in routes_lst:
+        route_df = routes_df[(routes_df["route"] == route)][["min_path","min_resp_path","max_path","max_resp_path"]]
+        # display(route_df)
+        min_route_df = read_route(route_df["min_path"].iloc[0], route_df["min_resp_path"].iloc[0])
+        # display(one_route_df)
+        route_clr = tuple(np.random.rand(3))
+        axes[0].plot(min_route_df["latitude"],min_route_df["longitude"],color = route_clr,label='a route')
+        max_route_df = read_route(route_df["max_path"].iloc[0], route_df["max_resp_path"].iloc[0])
+        # display(one_route_df)
+        axes[1].plot(max_route_df["latitude"],max_route_df["longitude"],color = route_clr,label='a route')
+    # plot depot (color blue)
+    depot_clr = 'blue'
+    axes[0].scatter(depot_df["latitude"],depot_df["longitude"], s=1000, color=depot_clr)
+    axes[1].scatter(depot_df["latitude"],depot_df["longitude"], s=1000, color=depot_clr)
+    plt.show()
+
+
 
 if __name__ == "__main__" :
     print (f"testing as a standalone script")
 
-    dir_df = get_directories()
-    print(dir_df)
-    min_max_df = get_min_max_directories(dir_df)
-    print(min_max_df)
-    depot_dict = get_depot_location()
-    write_depot_location(depot_dict)
-    print(depot_dict)
-    min_max_enr_df = enrich_min_max(min_max_df, depot_dict)
-    print(min_max_enr_df)
+    # dir_df = get_directories()
+    # print(dir_df)
+    # min_max_df = get_min_max_directories(dir_df)
+    # print(min_max_df)
+    # depot_dict = get_depot_location()
+    # write_depot_location(depot_dict)
+    # print(depot_dict)
+    # min_max_enr_df = enrich_min_max(min_max_df, depot_dict)
+    # print(min_max_enr_df)
 
+    # print (f"testing as a standalone script")
+    dir_df = get_directories()
+    # print(dir_df)
+    min_max_df = get_min_max_directories(dir_df)
+    depot_dict = get_depot_location()
+    # write_depot_location(depot_dict)
+    plot_routes_of_a_day("0521", "20220531", min_max_df, depot_dict)
+    plot_routes_of_a_day("0521", "20220601", min_max_df, depot_dict)
 
     # depot = get_depot_location()
     # print (depot)
